@@ -1,0 +1,202 @@
+:root {
+  /* Paper & Ink Palette */
+  --paper-bg: #f6f3eb;
+  --paper-card: #fcfaf4;
+  --paper-sheet: #ffffff;
+  --paper-accent: #eae4d5;
+  --paper-line: rgba(30, 25, 20, 0.06);
+  --paper-margin-line: rgba(185, 28, 28, 0.25);
+
+  --ink-dark: #1c1917;
+  --ink-muted: #57534e;
+  --ink-faint: #8a8378;
+  
+  --border-ink: #292524;
+  --border-subtle: #d6cfc4;
+  --border-dashed: #b8b0a2;
+
+  /* Strict Semantic Color System */
+  --color-blue: #1d4ed8;       /* Neural Activity / Synchrony / Spike Rate */
+  --color-blue-bg: #eff6ff;
+  --color-orange: #c2410c;     /* Training Stimulus / Fatigue */
+  --color-orange-bg: #fff7ed;
+  --color-green: #15803d;      /* Stable Learning / Retention */
+  --color-green-bg: #f0fdf4;
+  --color-red: #b91c1c;        /* Instability / Danger */
+  --color-red-bg: #fef2f2;
+  --color-purple: #6b21a8;     /* Adaptive Controller / Decision */
+  --color-purple-bg: #faf5ff;
+  --color-yellow: #b45309;     /* Experimental Events / Status */
+  --color-yellow-bg: #fffbeb;
+
+  /* Typography */
+  --font-serif: 'EB Garamond', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-typewriter: 'Courier Prime', monospace;
+  --font-hand: 'Kalam', cursive;
+
+  font-family: var(--font-mono);
+  color: var(--ink-dark);
+  background-color: var(--paper-bg);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--paper-bg);
+  /* Subtle Scientific Graph Paper Texture */
+  background-image: 
+    linear-gradient(var(--paper-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+  min-height: 100vh;
+  color: var(--ink-dark);
+}
+
+#root {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Notebook Container & Page Layout */
+.notebook-page {
+  background: var(--paper-card);
+  border-left: 2px solid var(--border-ink);
+  border-right: 2px solid var(--border-ink);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin: 20px auto;
+  padding: 32px 40px;
+  width: 96%;
+  max-width: 1500px;
+  position: relative;
+}
+
+/* Notebook Red Margin Line */
+.notebook-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 60px;
+  width: 1px;
+  background-color: var(--paper-margin-line);
+  pointer-events: none;
+}
+
+/* Scientific Section Panels */
+.lab-panel {
+  background: var(--paper-sheet);
+  border: 1px solid var(--border-ink);
+  border-radius: 0;
+  padding: 20px;
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.lab-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-ink);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.lab-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink-dark);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fig-caption {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+.handwritten-note {
+  font-family: var(--font-hand);
+  color: #2563eb;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  transform: rotate(-1.5deg);
+  display: inline-block;
+}
+
+/* Scientific Measurement Metric Cells */
+.metric-box {
+  background: var(--paper-card);
+  border: 1px solid var(--border-subtle);
+  padding: 14px 16px;
+  position: relative;
+}
+
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.metric-sub {
+  font-family: var(--font-typewriter);
+  font-size: 0.75rem;
+  margin-top: 6px;
+  color: var(--ink-faint);
+}
+
+/* Typography styles */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  color: var(--ink-dark);
+}
+
+.mono-text {
+  font-family: var(--font-mono);
+}
+
+.serif-text {
+  font-family: var(--font-serif);
+}
+
+/* Scrollbars & Utilities */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--paper-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-dashed);
+}
