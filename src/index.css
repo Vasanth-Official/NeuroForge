@@ -1,43 +1,50 @@
 :root {
-  /* Paper & Ink Palette */
-  --paper-bg: #f6f3eb;
-  --paper-card: #fcfaf4;
-  --paper-sheet: #ffffff;
-  --paper-accent: #eae4d5;
-  --paper-line: rgba(30, 25, 20, 0.06);
-  --paper-margin-line: rgba(185, 28, 28, 0.25);
+  /* Futuristic Dark Navy & Cyan Palette */
+  --bg-deep: #030712;
+  --bg-surface: #070e20;
+  --bg-card: rgba(10, 20, 42, 0.75);
+  --bg-card-hover: rgba(15, 28, 58, 0.85);
+  --bg-panel: rgba(8, 15, 33, 0.8);
+  --bg-input: rgba(6, 12, 28, 0.9);
 
-  --ink-dark: #1c1917;
-  --ink-muted: #57534e;
-  --ink-faint: #8a8378;
-  
-  --border-ink: #292524;
-  --border-subtle: #d6cfc4;
-  --border-dashed: #b8b0a2;
+  /* Cyan & Neon Accents */
+  --cyan-bright: #00f0ff;
+  --cyan-glow: rgba(0, 240, 255, 0.35);
+  --cyan-subtle: rgba(0, 240, 255, 0.12);
+  --blue-accent: #38bdf8;
+  --blue-electric: #2563eb;
+  --purple-neon: #a855f7;
+  --emerald-neon: #10b981;
+  --rose-neon: #f43f5e;
+  --amber-neon: #f59e0b;
 
-  /* Strict Semantic Color System */
-  --color-blue: #1d4ed8;       /* Neural Activity / Synchrony / Spike Rate */
-  --color-blue-bg: #eff6ff;
-  --color-orange: #c2410c;     /* Training Stimulus / Fatigue */
-  --color-orange-bg: #fff7ed;
-  --color-green: #15803d;      /* Stable Learning / Retention */
-  --color-green-bg: #f0fdf4;
-  --color-red: #b91c1c;        /* Instability / Danger */
-  --color-red-bg: #fef2f2;
-  --color-purple: #6b21a8;     /* Adaptive Controller / Decision */
-  --color-purple-bg: #faf5ff;
-  --color-yellow: #b45309;     /* Experimental Events / Status */
-  --color-yellow-bg: #fffbeb;
+  /* Text Colors */
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --text-glow: #e0f2fe;
+
+  /* Borders & Dividers */
+  --border-cyan: rgba(0, 240, 255, 0.25);
+  --border-cyan-heavy: rgba(0, 240, 255, 0.5);
+  --border-subtle: rgba(56, 189, 248, 0.15);
+  --border-card: rgba(255, 255, 255, 0.08);
+
+  /* Shadows & Glows */
+  --shadow-neon-cyan: 0 0 20px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 240, 255, 0.05);
+  --shadow-neon-blue: 0 0 20px rgba(56, 189, 248, 0.25);
+  --shadow-neon-purple: 0 0 20px rgba(168, 85, 247, 0.25);
+  --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 
   /* Typography */
-  --font-serif: 'EB Garamond', Georgia, serif;
+  --font-display: 'Orbitron', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-typewriter: 'Courier Prime', monospace;
-  --font-hand: 'Kalam', cursive;
 
-  font-family: var(--font-mono);
-  color: var(--ink-dark);
-  background-color: var(--paper-bg);
+  font-family: var(--font-body);
+  color: var(--text-main);
+  background-color: var(--bg-deep);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -49,154 +56,217 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--paper-bg);
-  /* Subtle Scientific Graph Paper Texture */
+  background-color: var(--bg-deep);
   background-image: 
-    linear-gradient(var(--paper-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: -1px -1px;
+    radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
+    linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
   min-height: 100vh;
-  color: var(--ink-dark);
+  color: var(--text-main);
+  overflow-x: hidden;
 }
 
 #root {
   width: 100%;
-  max-width: 1600px;
+  max-width: 1750px;
   margin: 0 auto;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding: 16px;
 }
 
-/* Notebook Container & Page Layout */
-.notebook-page {
-  background: var(--paper-card);
-  border-left: 2px solid var(--border-ink);
-  border-right: 2px solid var(--border-ink);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  margin: 20px auto;
-  padding: 32px 40px;
-  width: 96%;
-  max-width: 1500px;
+/* Glassmorphism & Neon Panels */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-cyan);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.glass-panel:hover {
+  border-color: var(--border-cyan-heavy);
+  box-shadow: var(--shadow-neon-cyan);
+}
+
+.neon-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 16px;
   position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-/* Notebook Red Margin Line */
-.notebook-page::before {
+.neon-card:hover {
+  border-color: var(--cyan-bright);
+}
+
+.neon-card::before {
   content: '';
   position: absolute;
   top: 0;
-  bottom: 0;
-  left: 60px;
-  width: 1px;
-  background-color: var(--paper-margin-line);
-  pointer-events: none;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan-bright), transparent);
+  opacity: 0.6;
 }
 
-/* Scientific Section Panels */
-.lab-panel {
-  background: var(--paper-sheet);
-  border: 1px solid var(--border-ink);
-  border-radius: 0;
-  padding: 20px;
-  position: relative;
-  margin-bottom: 24px;
+/* Glowing Typography */
+.gradient-text-cyan {
+  background: linear-gradient(135deg, #ffffff 0%, var(--cyan-bright) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
 }
 
-.lab-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-ink);
-  padding-bottom: 8px;
-  margin-bottom: 16px;
+.gradient-text-purple {
+  background: linear-gradient(135deg, #ffffff 0%, var(--purple-neon) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.lab-title {
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--ink-dark);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.cyan-glow-text {
+  color: var(--cyan-bright);
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
 }
 
-.fig-caption {
+/* Cyber Buttons */
+.cyber-btn {
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: 700;
   letter-spacing: 0.08em;
-  color: var(--ink-muted);
-}
-
-.handwritten-note {
-  font-family: var(--font-hand);
-  color: #2563eb;
-  font-size: 1.1rem;
-  line-height: 1.2;
-  transform: rotate(-1.5deg);
-  display: inline-block;
-}
-
-/* Scientific Measurement Metric Cells */
-.metric-box {
-  background: var(--paper-card);
-  border: 1px solid var(--border-subtle);
-  padding: 14px 16px;
-  position: relative;
-}
-
-.metric-label {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--ink-muted);
-  margin-bottom: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  outline: none;
 }
 
-.metric-value {
+.cyber-btn-primary {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(37, 99, 235, 0.4) 100%);
+  border: 1px solid var(--cyan-bright);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+}
+
+.cyber-btn-primary:hover {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.4) 0%, rgba(37, 99, 235, 0.7) 100%);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.cyber-btn-secondary {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-subtle);
+  color: var(--blue-accent);
+}
+
+.cyber-btn-secondary:hover {
+  border-color: var(--blue-accent);
+  background: rgba(30, 41, 59, 0.9);
+  color: #ffffff;
+}
+
+.cyber-btn-danger {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid var(--rose-neon);
+  color: var(--rose-neon);
+}
+
+.cyber-btn-danger:hover {
+  background: rgba(244, 63, 94, 0.3);
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+}
+
+.cyber-btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+}
+
+.cyber-btn-ghost:hover {
+  border-color: var(--cyan-bright);
+  color: var(--cyan-bright);
+}
+
+/* Badges & Status */
+.protocol-badge {
   font-family: var(--font-mono);
-  font-size: 1.8rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.metric-sub {
-  font-family: var(--font-typewriter);
-  font-size: 0.75rem;
-  margin-top: 6px;
-  color: var(--ink-faint);
+.protocol-badge-low {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--emerald-neon);
+  color: var(--emerald-neon);
 }
 
-/* Typography styles */
-h1, h2, h3, h4 {
-  font-family: var(--font-serif);
-  color: var(--ink-dark);
+.protocol-badge-medium {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid var(--blue-accent);
+  color: var(--blue-accent);
 }
 
-.mono-text {
-  font-family: var(--font-mono);
+.protocol-badge-high {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid var(--rose-neon);
+  color: var(--rose-neon);
 }
 
-.serif-text {
-  font-family: var(--font-serif);
+.protocol-badge-none {
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--text-faint);
+  color: var(--text-faint);
 }
 
-/* Scrollbars & Utilities */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--paper-bg);
+  background: var(--bg-deep);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-dashed);
+  background: rgba(0, 240, 255, 0.25);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan-bright);
+}
+
+/* Print Styles for Scientific Report */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .printable-report {
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+  }
 }

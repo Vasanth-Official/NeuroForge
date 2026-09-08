@@ -21,7 +21,22 @@ export type {
   ReadinessAssessment,
   TrainingProtocol,
   TrainingProtocolId,
+  TaskType,
+  BannHyperparameters,
+  BannNeuron,
+  BannSynapse,
+  BannState,
+  BehavioralInputs,
+  BannTelemetry,
 } from './types.ts';
+
+export {
+  createInitialBannState,
+  updateBannState,
+  runBannBatch,
+  DEFAULT_HYPERPARAMS,
+} from './bann.ts';
+
 
 // ── PRNG utilities (exposed for advanced / testing use) ───────────────────
 export {
@@ -71,3 +86,26 @@ export {
   generateDecisionReason,
   selectAdaptiveProtocol,
 } from './controller.ts';
+
+// ── Experiment Runner ──────────────────────────────────────────────────────
+export type {
+  BiologicalState,
+  ComparisonProtocol,
+  ExperimentConfig,
+  ExperimentLogEntry,
+  ExperimentResult,
+  BenchmarkResult,
+  BenchmarkStats,
+  PerEpisodePoint,
+  ProtocolExperimentResult,
+  RestPhaseResult,
+} from './experimentRunner.ts';
+
+export {
+  classifyBiologicalState,
+  biologicalStateColor,
+  biologicalStateDescription,
+  runExperiment,
+  runBenchmark,
+  DEFAULT_EXPERIMENT_CONFIG,
+} from './experimentRunner.ts';

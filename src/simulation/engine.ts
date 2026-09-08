@@ -34,6 +34,7 @@ import {
   calculateTrainingEfficiency,
   simulateNeuralActivity,
 } from './calculations.ts';
+import { createInitialBannState, updateBannState, type BehavioralInputs } from './bann.ts';
 
 // ---------------------------------------------------------------------------
 // Re-exports (public API surface lives in index.ts but these are the impls)
@@ -59,6 +60,7 @@ export {
  * @param seed - integer seed for the PRNG (default: 42)
  */
 export function initializeNeuralSystem(seed: number = 42): NeuralSystemState {
+  const bannState = createInitialBannState(seed);
   return {
     learningScore: 0,
     stability: 75,       // systems start at healthy but not perfect stability
@@ -69,6 +71,8 @@ export function initializeNeuralSystem(seed: number = 42): NeuralSystemState {
     fatigue: 0,
     seed,
     trainingHistory: [],
+    bannState,
+    bannTelemetryHistory: [],
   };
 }
 
@@ -113,15 +117,25 @@ export function applyTrainingProtocol(
  *
  * @param state      - current neural system state (mutated)
  * @param protocolId - which training protocol to apply
+ * @param behavioralInputs - optional inputs from user task execution
  * @returns the completed `CycleRecord`
  */
 export function runTrainingCycle(
   state: NeuralSystemState,
   protocolId: TrainingProtocolId,
+  behavioralInputs?: Partial<BehavioralInputs>
 ): CycleRecord {
   const protocol = getProtocol(protocolId);
   const cycleIndex = state.trainingHistory.length + 1;
   const phaseSnapshots: PhaseSnapshot[] = [];
+
+  // Ensure bannState exists
+  if (!state.bannState) {
+    state.bannState = createInitialBannState(state.seed);
+  }
+  if (!state.bannTelemetryHistory) {
+    state.bannTelemetryHistory = [];
+  }
 
   // ── Advance the seeded PRNG ──────────────────────────────────────────────
   // Each cycle advances the seed deterministically so repeated calls on the
@@ -198,7 +212,7 @@ export function runTrainingCycle(
 
   // ══════════════════════════════════════════════════════════════════════════
   // PHASE 4: UPDATE
-  // Apply all computed deltas to the live state.
+  // Apply all computed deltas to the live state and trigger BANN neural update.
   // ══════════════════════════════════════════════════════════════════════════
   const prevLearningScore = state.learningScore;
   const prevStability = state.stability;
@@ -213,6 +227,19 @@ export function runTrainingCycle(
   state.synchrony = clamp(state.synchrony + synchronyChange, 0, 100);
   state.spikeRate = observed.spikeRate;
   state.variability = observed.variability;
+
+  // Execute BANN State Update
+  const currentInputs: BehavioralInputs = {
+    accuracy: behavioralInputs?.accuracy ?? Math.min(99, Math.max(10, state.learningScore * 0.9 + 10)),
+    errorRate: behavioralInputs?.errorRate ?? Math.max(0.01, (100 - state.learningScore) / 100),
+    reactionTimeMs: behavioralInputs?.reactionTimeMs ?? Math.max(400, 2200 - state.learningScore * 15),
+    confidence: behavioralInputs?.confidence ?? Math.min(0.99, state.learningScore / 100 * 0.8 + 0.2),
+    difficulty: behavioralInputs?.difficulty ?? state.bannState.hyperparams.difficulty,
+    taskType: behavioralInputs?.taskType ?? 'PATTERN_RECOGNITION',
+  };
+
+  const bannTelemetry = updateBannState(state.bannState, currentInputs, cycleIndex);
+  state.bannTelemetryHistory.push(bannTelemetry);
 
   // Advance the stored seed for the next cycle
   state.seed = state.seed + cycleIndex * 1_000_003;
@@ -278,6 +305,7 @@ export function runTrainingCycle(
     retention: parseFloat(state.retention.toFixed(3)),
     fatigue: parseFloat(state.fatigue.toFixed(3)),
     seed: state.seed,
+    bannState: state.bannState,
   };
 
   const record: CycleRecord = {
@@ -292,3 +320,4 @@ export function runTrainingCycle(
   state.trainingHistory.push(record);
   return record;
 }
+

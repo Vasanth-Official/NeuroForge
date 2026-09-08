@@ -1,8 +1,14 @@
-/**
- * NeuroForge Simulation Engine — Type Definitions
- *
- * All types are pure data; no React or DOM imports here.
- */
+import type { BannState, BannTelemetry } from './bann.ts';
+
+export type {
+  TaskType,
+  BannHyperparameters,
+  BannNeuron,
+  BannSynapse,
+  BannState,
+  BehavioralInputs,
+  BannTelemetry,
+} from './bann.ts';
 
 // ---------------------------------------------------------------------------
 // Enumerations
@@ -69,6 +75,10 @@ export interface NeuralSystemState {
   seed: number;
   /** Ordered log of completed training cycles. */
   trainingHistory: CycleRecord[];
+  /** Embedded real BANN AI model state (activations, synapses, hyperparameters). */
+  bannState?: BannState;
+  /** Telemetry log of BANN updates across training. */
+  bannTelemetryHistory?: BannTelemetry[];
 }
 
 // ---------------------------------------------------------------------------
@@ -122,3 +132,4 @@ export interface ReadinessAssessment {
   /** Effective learning-rate multiplier adjusted for current state. */
   effectiveLearningMultiplier: number;
 }
+

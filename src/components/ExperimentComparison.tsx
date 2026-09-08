@@ -9,7 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { Activity, Play, RotateCcw } from 'lucide-react';
+import { Activity, Play } from 'lucide-react';
 import {
   initializeNeuralSystem,
   runTrainingCycle,
@@ -29,26 +29,42 @@ interface ComparisonResult {
   history: CycleRecord[];
 }
 
-export function ExperimentComparison() {
+const CHART_TOOLTIP_STYLE = {
+  backgroundColor: 'rgba(6, 12, 28, 0.95)',
+  border: '1px solid #00f0ff',
+  borderRadius: '8px',
+  color: '#ffffff',
+  fontFamily: 'var(--font-mono)',
+  fontSize: '11px',
+};
+
+interface SavedSessionSnapshot {
+  id: string;
+  label: string;
+  timestamp: string;
+  state: NeuralSystemState;
+}
+
+interface ExperimentComparisonProps {
+  savedSessions?: SavedSessionSnapshot[];
+}
+
+export function ExperimentComparison({ savedSessions = [] }: ExperimentComparisonProps) {
   const [hasRun, setHasRun] = useState(false);
   const [controlResult, setControlResult] = useState<ComparisonResult | null>(null);
   const [adaptiveResult, setAdaptiveResult] = useState<ComparisonResult | null>(null);
 
   const runExperiment = () => {
-    // Generate a single starting state with a specific random seed to ensure exact parity
     const baseState = initializeNeuralSystem();
-    baseState.seed = Math.floor(Math.random() * 10000); // Set common seed
+    baseState.seed = Math.floor(Math.random() * 10000);
 
-    // Deep clone state (since it's a plain data object, JSON is safe)
     const controlState: NeuralSystemState = JSON.parse(JSON.stringify(baseState));
     const adaptiveState: NeuralSystemState = JSON.parse(JSON.stringify(baseState));
 
-    // Run Control Condition (Fixed MEDIUM protocol)
     for (let i = 0; i < 10; i++) {
       runTrainingCycle(controlState, 'MEDIUM');
     }
 
-    // Run Adaptive Condition (NeuroForge Controller)
     let adaptiveSwitches = 0;
     let lastProtocol = '';
     for (let i = 0; i < 10; i++) {
@@ -60,23 +76,19 @@ export function ExperimentComparison() {
       runTrainingCycle(adaptiveState, decision.protocol);
     }
 
-    // Extraction helper
     const summarize = (state: NeuralSystemState, switches: number): ComparisonResult => {
       const history = state.trainingHistory;
-      const initialLearning = 0; // initializeNeuralSystem starts at 0
       const finalLearning = state.learningScore;
-      
       const sumStability = history.reduce((acc, rec) => acc + rec.endState.stability, 0);
       const sumFatigue = history.reduce((acc, rec) => acc + rec.endState.fatigue, 0);
       const sumEfficiency = history.reduce((acc, rec) => acc + rec.efficiency, 0);
-
       return {
         finalLearning,
-        learningGain: finalLearning - initialLearning,
-        avgStability: sumStability / history.length,
+        learningGain: finalLearning,
+        avgStability: sumStability / (history.length || 1),
         finalRetention: state.retention,
-        avgFatigue: sumFatigue / history.length,
-        avgEfficiency: sumEfficiency / history.length,
+        avgFatigue: sumFatigue / (history.length || 1),
+        avgEfficiency: sumEfficiency / (history.length || 1),
         protocolSwitches: switches,
         history,
       };
@@ -87,186 +99,101 @@ export function ExperimentComparison() {
     setHasRun(true);
   };
 
-  const resetExperiment = () => {
-    setHasRun(false);
-    setControlResult(null);
-    setAdaptiveResult(null);
-  };
-
-  // Prepare chart data
-  const chartData = [];
-  if (hasRun && controlResult && adaptiveResult) {
-    for (let i = 0; i < 10; i++) {
-      chartData.push({
+  const chartData = hasRun && controlResult && adaptiveResult
+    ? Array.from({ length: 10 }, (_, i) => ({
         cycle: i + 1,
-        controlLearning: controlResult.history[i].endState.learningScore,
-        adaptiveLearning: adaptiveResult.history[i].endState.learningScore,
-      });
-    }
-  }
+        controlLearning: controlResult.history[i]?.endState.learningScore ?? 0,
+        adaptiveLearning: adaptiveResult.history[i]?.endState.learningScore ?? 0,
+        controlStability: controlResult.history[i]?.endState.stability ?? 0,
+        adaptiveStability: adaptiveResult.history[i]?.endState.stability ?? 0,
+      }))
+    : [];
 
   return (
-    <section className="lab-panel" style={{ border: '2px solid var(--border-ink)' }}>
-      <div className="lab-panel-header" style={{ borderBottom: '2px solid var(--border-ink)' }}>
-        <h2 className="lab-title" style={{ fontSize: '1.4rem' }}>
-          <Activity size={20} color="var(--ink-dark)"/> EXPERIMENT 002: CONTROL VS NEUROFORGE ADAPTIVE
-        </h2>
-        <span className="fig-caption">N=10 CYCLES / IDENTICAL INITIAL SEED</span>
-      </div>
-
-      <div style={{ 
-        backgroundColor: '#fffbeb', 
-        color: '#b45309', 
-        padding: '8px 16px', 
-        textAlign: 'center',
-        fontFamily: 'var(--font-mono)',
-        fontSize: '0.75rem',
-        fontWeight: 700,
-        marginBottom: '24px',
-        border: '1px solid #fde68a',
-        letterSpacing: '0.12em'
-      }}>
-        CLASSIFICATION NOTICE: COMPUTATIONAL SIMULATION — NOT BIOLOGICAL EXPERIMENTAL DATA
-      </div>
-
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-        <button 
-          onClick={runExperiment}
-          style={{ 
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.85rem',
-            fontWeight: 700,
-            backgroundColor: 'var(--ink-dark)',
-            color: 'var(--paper-sheet)',
-            border: '1px solid var(--ink-dark)',
-            padding: '10px 24px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <Play size={16}/> RUN 10-CYCLE COMPARISON
-        </button>
-        <button 
-          onClick={resetExperiment}
-          style={{ 
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.85rem',
-            fontWeight: 700,
-            backgroundColor: 'transparent',
-            color: 'var(--ink-dark)',
-            border: '1px solid var(--border-ink)',
-            padding: '10px 24px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <RotateCcw size={16}/> RESET
-        </button>
-      </div>
-
-      {hasRun && controlResult && adaptiveResult && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-          
-          {/* Comparison Chart */}
-          <div style={{ border: '1px solid var(--border-subtle)', padding: '16px', backgroundColor: 'var(--paper-card)' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontFamily: 'var(--font-serif)', fontSize: '1.1rem', textAlign: 'center' }}>
-              FIG. 06 — LEARNING TRAJECTORY COMPARISON
-            </h3>
-            <div style={{ height: '300px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#eae4d5" />
-                  <XAxis dataKey="cycle" stroke="#57534e" fontSize={11} fontFamily="var(--font-mono)" />
-                  <YAxis domain={[0, 100]} stroke="#57534e" fontSize={11} fontFamily="var(--font-mono)" />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#fcfaf4', border: '1px solid #292524', fontFamily: 'var(--font-mono)', fontSize: '12px' }} 
-                  />
-                  <Legend wrapperStyle={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="controlLearning" 
-                    name="Control (Fixed MEDIUM)" 
-                    stroke="#8a8378" 
-                    strokeWidth={2} 
-                    strokeDasharray="4 4"
-                    dot={{ r: 3 }} 
-                    isAnimationActive={false} 
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="adaptiveLearning" 
-                    name="NeuroForge (Adaptive)" 
-                    stroke="#6b21a8" 
-                    strokeWidth={3} 
-                    dot={{ r: 4 }} 
-                    isAnimationActive={false} 
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+    <div className="glass-panel" style={{ padding: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '14px' }}>
+        <div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, color: 'var(--purple-neon)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '4px' }}>
+            BENCHMARKING ENGINE
           </div>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Activity size={22} color="var(--purple-neon)" />
+            EXPERIMENT BENCHMARK &amp; COMPARISON
+          </h2>
+        </div>
+        <button onClick={runExperiment} className="cyber-btn cyber-btn-primary">
+          <Play size={14} /> RUN BENCHMARK EVALUATION
+        </button>
+      </div>
 
-          {/* Data Table */}
-          <div style={{ border: '1px solid var(--border-subtle)', padding: '16px', backgroundColor: 'var(--paper-card)' }}>
-             <h3 style={{ margin: '0 0 16px 0', fontFamily: 'var(--font-serif)', fontSize: '1.1rem', textAlign: 'center' }}>
-              TABLE I — AGGREGATE PERFORMANCE METRICS
-            </h3>
-            
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-ink)' }}>
-                  <th style={{ textAlign: 'left', padding: '8px' }}>METRIC</th>
-                  <th style={{ textAlign: 'right', padding: '8px', color: '#8a8378' }}>CONTROL</th>
-                  <th style={{ textAlign: 'right', padding: '8px', color: 'var(--color-purple)' }}>NEUROFORGE</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <td style={{ padding: '8px', color: 'var(--ink-muted)' }}>Final Learning Score</td>
-                  <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700 }}>{controlResult.finalLearning.toFixed(2)}</td>
-                  <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700 }}>{adaptiveResult.finalLearning.toFixed(2)}</td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <td style={{ padding: '8px', color: 'var(--ink-muted)' }}>Average Stability</td>
-                  <td style={{ padding: '8px', textAlign: 'right' }}>{controlResult.avgStability.toFixed(2)}</td>
-                  <td style={{ padding: '8px', textAlign: 'right' }}>{adaptiveResult.avgStability.toFixed(2)}</td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <td style={{ padding: '8px', color: 'var(--ink-muted)' }}>Average Fatigue</td>
-                  <td style={{ padding: '8px', textAlign: 'right' }}>{controlResult.avgFatigue.toFixed(2)}%</td>
-                  <td style={{ padding: '8px', textAlign: 'right' }}>{adaptiveResult.avgFatigue.toFixed(2)}%</td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <td style={{ padding: '8px', color: 'var(--ink-muted)' }}>Final Retention</td>
-                  <td style={{ padding: '8px', textAlign: 'right', color: 'var(--color-green)' }}>{controlResult.finalRetention.toFixed(2)}</td>
-                  <td style={{ padding: '8px', textAlign: 'right', color: 'var(--color-green)' }}>{adaptiveResult.finalRetention.toFixed(2)}</td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                  <td style={{ padding: '8px', color: 'var(--ink-muted)' }}>Training Efficiency</td>
-                  <td style={{ padding: '8px', textAlign: 'right' }}>{controlResult.avgEfficiency.toFixed(2)}</td>
-                  <td style={{ padding: '8px', textAlign: 'right' }}>{adaptiveResult.avgEfficiency.toFixed(2)}</td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '8px', color: 'var(--ink-muted)' }}>Protocol Switches</td>
-                  <td style={{ padding: '8px', textAlign: 'right' }}>0 (Fixed)</td>
-                  <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700 }}>{adaptiveResult.protocolSwitches}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div style={{ marginTop: '24px', padding: '12px', backgroundColor: 'var(--paper-sheet)', border: '1px dashed var(--border-dashed)', fontSize: '0.8rem', color: 'var(--ink-muted)' }}>
-              <strong>EXPERIMENTAL PARAMETERS:</strong><br/>
-              Condition A: Fixed [MEDIUM] Intensity<br/>
-              Condition B: Dynamic [LOW/MEDIUM/HIGH] Optimization<br/>
-              N = 10 Cycles. State Initialized with Seed: {controlResult.history[0]?.endState.seed || 'RANDOM'}
-            </div>
+      {/* ── Saved Snapshots Summary Bar ──────────────────────────────────── */}
+      {savedSessions.length > 0 && (
+        <div style={{ marginBottom: '24px', backgroundColor: 'rgba(6, 14, 32, 0.7)', border: '1px solid var(--border-subtle)', padding: '16px', borderRadius: '10px' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--cyan-bright)', marginBottom: '10px' }}>
+            SAVED EXPERIMENT SNAPSHOTS ({savedSessions.length}):
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
+            {savedSessions.map((snap) => (
+              <div key={snap.id} className="neon-card" style={{ padding: '10px 14px' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700, color: '#ffffff' }}>{snap.label}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-muted)' }}>{snap.timestamp}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--cyan-bright)', marginTop: '4px' }}>
+                  Score: {snap.state.learningScore.toFixed(1)}% | Ret: {snap.state.retention.toFixed(1)}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
-    </section>
+
+      {/* ── Benchmarking Results ────────────────────────────────────────── */}
+      {hasRun && controlResult && adaptiveResult ? (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            <div className="neon-card">
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '6px', marginBottom: '10px' }}>
+                CONTROL RUN (FIXED MEDIUM PROTOCOL)
+              </div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700, color: '#ffffff' }}>
+                {controlResult.finalLearning.toFixed(1)}%
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                Avg Stability: {controlResult.avgStability.toFixed(1)} | Avg Fatigue: {controlResult.avgFatigue.toFixed(1)}%
+              </div>
+            </div>
+
+            <div className="neon-card" style={{ borderColor: 'var(--cyan-bright)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--cyan-bright)', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '6px', marginBottom: '10px' }}>
+                ADAPTIVE CONTROLLER RUN (DYNAMIC PROTOCOLS)
+              </div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700, color: 'var(--cyan-bright)' }}>
+                {adaptiveResult.finalLearning.toFixed(1)}%
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                Avg Stability: {adaptiveResult.avgStability.toFixed(1)} | Avg Fatigue: {adaptiveResult.avgFatigue.toFixed(1)}% | Switches: {adaptiveResult.protocolSwitches}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ height: '360px', backgroundColor: 'rgba(5, 11, 26, 0.9)', border: '1px solid var(--border-subtle)', padding: '16px', borderRadius: '10px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(56, 189, 248, 0.1)" />
+                <XAxis dataKey="cycle" stroke="#64748b" fontSize={11} fontFamily="var(--font-mono)" />
+                <YAxis stroke="#64748b" fontSize={11} fontFamily="var(--font-mono)" />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                <Legend wrapperStyle={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#94a3b8' }} />
+                <Line type="monotone" dataKey="controlLearning" name="Control Learning" stroke="#94a3b8" strokeWidth={2} />
+                <Line type="monotone" dataKey="adaptiveLearning" name="Adaptive Learning" stroke="#00f0ff" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '40px 20px', fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          Click "RUN BENCHMARK EVALUATION" to compare fixed vs adaptive protocol outcomes side-by-side.
+        </div>
+      )}
+    </div>
   );
 }
